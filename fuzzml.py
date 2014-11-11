@@ -9,6 +9,7 @@ from datetime import datetime
 parser = argparse.ArgumentParser(description='SOAP web service Fuzzer', fromfile_prefix_chars='@')
 parser.add_argument('url', help='Web service URL to fuzz')
 parser.add_argument('--header', nargs='*', help='Specify required request headers')
+parser.add_argument('--fheader', help='Specify a file containing the required request headers')
 parser.add_argument('--data', help='Data to be sent inside the request body')
 args = parser.parse_args()
 
@@ -69,19 +70,50 @@ def add_default_headers():
     return dict({ 'Content-Type': 'text/xml; charset=utf-8', 'User-Agent': 'FuzzML/1.0' });
 
 
-def check_headers( hdr ):
-    hdr = ''.join( hdr[0:1] )
-    if os.path.isfile( hdr ): 
-        print hdr;    
+def add_header( header_dict, field_value_dict ):
+    header_dict.update( field_value_dict );
+    print hr;
+    return
+
+def add_headers( header, fheader ):
+    hr = add_default_headers();
+    print header;
+    print fheader;
+    if ( header in locals() ):
+#        hr.update( dict( header[i:i+2] for i in range( 0, len( header ), 2) ) );
+        add_header( hr, list2dict( header ) );
+    if ( fheader in locals() ):
+        print "fheader - %s" %(get_headers_from_file( fheader ));
+        add_header( hr, get_headers_from_file( fheader ) );
+        print hr;
+    print "fheader - %s" %(get_headers_from_file( fheader ));
+    print locals();
+    return hr;
+
+
+def get_headers_from_file( hdr_file ):
+    if (os.path.exists( hdr_file )):
+        fp_hdr = open( hdr_file, 'r');
+        return list2dict(fp_hdr.readlines());
     else:
-        end("It looks like you specified a file containing the headers (%s), but I'm not able to find it." %( hdr ));
+        end("File not found: %s\n" %( hdr_file ));
+
+def list2dict( llist ):
+    print type(llist);
+    lst = ''.join(llist).split(' ');
+    print lst[1];
+    print lst;
+    lst[1].rstrip('\n');
+    print lst;
+    print dict( lst[i:i+2] for i in range( 0, len( lst ), 2) )
+    return dict( lst[i:i+2] for i in range( 0, len( lst ), 2) )
+
 
 check_url_syntax( args.url );
 verify_url( args.url );
 url = get_address( args.url ); 
-#check_headers( args.header );
-hr = add_default_headers();
-hr.update(dict(args.header[i:i+2] for i in range(0, len(args.header), 2)));
+#hr = add_headers( args.header, args.fheader );
+hr = add_headers( args.header, args.fheader );
 http_resp = make_request( args.url, hr, args.data );
 #save_response( args.data, http_resp.text );
 
