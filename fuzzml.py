@@ -7,6 +7,7 @@ from datetime import datetime
 
 parser = argparse.ArgumentParser( description='SOAP web service Fuzzer' );
 parser.add_argument( 'url', help='Web service URL to fuzz' );
+parser.add_argument( '--no-cert-validate', action='store_true', help="Disable certificates validation" );
 parser.add_argument( '--header', nargs='*', help='Specify required request headers' );
 parser.add_argument( '--fheader', help='Specify a file containing the required request headers' );
 parser.add_argument( '--ua', help='Specify User-Agent header' );
@@ -29,7 +30,10 @@ def check_url_syntax( url ):
 
 def verify_url( url ):
     print('\nChecking if URL is available...');
-    req = requests.post(url, data='');   
+    if (args.no_cert_validate):
+        req = requests.post(url, data='', verify=False);   
+    else:
+        req = requests.post(url, data='');   
     if (req.status_code == requests.codes.ok):
         return
     else:
@@ -38,7 +42,10 @@ def verify_url( url ):
 
 
 def make_request( url, usr_headers, content='None' ):
-    http = requests.post( url, data=content, headers=usr_headers );
+    if (args.no_cert_validate):
+        http = requests.post( url, data=content, headers=usr_headers, verify=False );
+    else:
+        http = requests.post( url, data=content, headers=usr_headers );
     http.close();
     return http;
 
@@ -61,12 +68,10 @@ def get_address( url ):
 def save_response( request_content, response_content ):
     if not os.path.exists(path):
         os.makedirs(path);
-    fp_req = open( path + url + '_req.txt', 'w+' );     # requests/www.example.com_webservice.php_20141110_1822.15.059238_req.txt 
-    fp_resp = open( path + url + '_resp.txt', 'w+' );    # requests/www.example.com_webservice.php_20141110_1822.15.059238_resp.txt
-    fp_req.write( request_content );
-    fp_resp.write( response_content );
-    fp_req.close();
-    fp_resp.close();
+    with open( path + url + '_req.txt', 'w+' ) as fp_req:     # requests/www.example.com_webservice.php_20141110_1822.15.059238_req.txt 
+        fp_req.write( request_content );
+    with open( path + url + '_resp.txt', 'w+' ) as fp_resp:    # requests/www.example.com_webservice.php_20141110_1822.15.059238_resp.txt
+        fp_resp.write( response_content );
 
 def add_default_headers():
     return dict({ 'Content-Type': 'text/xml; charset=utf-8', 'User-Agent': 'FuzzML/1.0' });
@@ -109,10 +114,24 @@ def replace_tabs( string ):
     return string.split();
 
 
+def set_req_body( cmdline_data, file_data ):
+    if ( ( cmdline_data is not None ) and ( file_data is None ) ):      # if the user defined data through command line
+        return cmdline_data;
+    elif ( ( cmdline_data is None ) and (file_data is not None ) ):     # if the user defined data through a file
+        if os.path.exists( file_data ):
+            with open( file_data, 'r' ) as f:
+                body = f.read( 100 * 1024 );    # read at most 100 KB from file
+            return body;
+    else:
+        print 'You have to specify the content of the request, but you must use only one parameter: --data OR --fdata.\n';
+        
+
+
 check_url_syntax( args.url );
 verify_url( args.url );
 url = get_address( args.url ); 
 hr = add_headers( args );
-http_resp = make_request( args.url, hr, args.data );
+content = set_req_body( args.data, args.fdata );
+http_resp = make_request( args.url, hr, content );
 #save_response( args.data, http_resp.text );
 
