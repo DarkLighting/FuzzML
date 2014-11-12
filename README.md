@@ -1,4 +1,4 @@
 FuzzML
 ======
 
-SOAP Service Fuzzer
+XML Fuzzer
