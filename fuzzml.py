@@ -1,13 +1,17 @@
 #!/usr/bin/env python2
 
+import sys
 import requests
 import argparse
 import os.path
 from datetime import datetime
+import xml.etree.ElementTree as et
+import unicodedata
 
 parser = argparse.ArgumentParser( description='SOAP web service Fuzzer' );
 parser.add_argument( 'url', help='Web service URL to fuzz' );
 parser.add_argument( '--no-cert-validate', action='store_true', help="Disable certificates validation" );
+parser.add_argument( '--auto', action='store_true', help="Enable automatic testing" );
 parser.add_argument( '--header', nargs='*', help='Specify required request headers' );
 parser.add_argument( '--fheader', help='Specify a file containing the required request headers' );
 parser.add_argument( '--ua', help='Specify User-Agent header' );
@@ -74,7 +78,7 @@ def save_response( request_content, response_content ):
         fp_resp.write( response_content );
 
 def add_default_headers():
-    return dict({ 'Content-Type': 'text/xml; charset=utf-8', 'User-Agent': 'FuzzML/1.0' });
+    return dict({ 'Content-Type': 'text/xml; charset=ascii', 'User-Agent': 'FuzzML/1.0' });
 
 
 def add_header( header_dict, field_value_dict ):
@@ -120,18 +124,29 @@ def set_req_body( cmdline_data, file_data ):
     elif ( ( cmdline_data is None ) and (file_data is not None ) ):     # if the user defined data through a file
         if os.path.exists( file_data ):
             with open( file_data, 'r' ) as f:
-                body = f.read( 100 * 1024 );    # read at most 100 KB from file
+                body = f.read( 20 * 1024 );    # read at most 20 KB from file
             return body;
-    else:
-        print 'You have to specify the content of the request, but you must use only one parameter: --data OR --fdata.\n';
+    elif ( ( cmdline_data is not None ) and ( file_data is not None ) ):
+        end( 'You cannot specify BOTH parameters: --data AND --fdata. Choose only one.\n' );
         
+        
+def parse_xml_resp( xml_data ):
+    root = et.fromstring( xml_data );
+    for child in root.iter():
+        print child.tag.split('}')[1], child.attrib, '-' + child.text;
+        if ( all( i in child.text for i in '</>' ) ):
+            parse_xml_resp( child.text );   # Found xml as part of a child's node value 
 
 
 check_url_syntax( args.url );
-verify_url( args.url );
+if args.auto:
+    verify_url( args.url );
 url = get_address( args.url ); 
 hr = add_headers( args );
 content = set_req_body( args.data, args.fdata );
 http_resp = make_request( args.url, hr, content );
 #save_response( args.data, http_resp.text );
-
+print '\nResponse:\n';
+response_converted = unicodedata.normalize( 'NFKD', http_resp.text ).encode( 'ascii', 'ignore' );
+print response_converted;
+parse_xml_resp( response_converted );
