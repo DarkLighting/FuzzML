@@ -6,6 +6,7 @@ import argparse
 import os.path
 from datetime import datetime
 import xml.etree.ElementTree as et
+from xml.dom import minidom
 import unicodedata
 
 parser = argparse.ArgumentParser( description='SOAP web service Fuzzer' );
@@ -128,25 +129,128 @@ def set_req_body( cmdline_data, file_data ):
             return body;
     elif ( ( cmdline_data is not None ) and ( file_data is not None ) ):
         end( 'You cannot specify BOTH parameters: --data AND --fdata. Choose only one.\n' );
-        
+
+
+def parse_xml_req( xml_data ):
+    if ( ( not isinstance( xml_data, str ) ) and ( not isinstance( xml_data, et.Element ) ) ):
+        end( 'Unrecognized xml data.' );
+    if ( isinstance( xml_data, str ) ):
+        root = et.fromstring( xml_data );
+    elif ( isinstance( xml_data, et.Element ) ):
+        root = xml_data;
+    return root;
+
         
 def parse_xml_resp( xml_data ):
-    root = et.fromstring( xml_data );
+    if ( ( not isinstance( xml_data, str ) ) and ( not isinstance( xml_data, et.Element ) ) ):
+        end( 'Unrecognized xml data.' );
+    if ( isinstance( xml_data, str ) ):
+        root = et.fromstring( xml_data );
+    elif ( isinstance( xml_data, et.Element ) ):
+        root = xml_data;
     for child in root.iter():
-        print child.tag.split('}')[1], child.attrib, '-' + child.text;
-        if ( all( i in child.text for i in '</>' ) ):
-            parse_xml_resp( child.text );   # Found xml as part of a child's node value 
+        if ( '}' in child.tag ):
+            print child.tag.split('}')[1], child.attrib, '-' + child.text.strip();  # transforms '{scope}TAG' in 'TAG'
+
+'''
+def fuzzml_element_duplication( root ):
+    xml_nodes = get_nodes_list( root );
+    #xml_nodes = root;
+    print ( len(xml_nodes));
+    for i in range( 1, len(xml_nodes) ):
+        nodes_list = list( xml_nodes );
+        #tree = et.Element(xml_nodes[0]);
+        tree = reconstruct_xml_tree( xml_nodes );
+        #nodes_list =  xml_nodes;
+        #nodes_list = et.Element() ;
+        #tree = 
+        print type(nodes_list);
+        if ( len( nodes_list ) > 1 ):
+            duplicate_node( i, nodes_list );
+            print 'list - ',nodes_list[i];
+        print 'root - ',root[0];
+        #et.dump( nodes_list[0] );
+        et.tostring( root[0] );
+        print '\n';
+    et.tostring( xml_nodes[1] );
+    #print xml_nodes;
+'''
+
+def fuzzml_element_duplication( root ):
+    new_tree = copy_tree ( root );
+    comparison_node_list = list();
+    tree_root = new_tree.getroot();
+    vnode = get_leaf_parent( tree_root );
+    for i in range( len( get_children( vnode ) ) ):
+        duplicate_children_node( vnode, i, comparison_node_list );
+        print "%s %s" %(vnode, '\n');
+        et.dump(tree_root);
+    #get_left_leaf( tree_root );
+    #print tree;
 
 
-check_url_syntax( args.url );
-if args.auto:
-    verify_url( args.url );
-url = get_address( args.url ); 
-hr = add_headers( args );
-content = set_req_body( args.data, args.fdata );
-http_resp = make_request( args.url, hr, content );
-#save_response( args.data, http_resp.text );
-print '\nResponse:\n';
-response_converted = unicodedata.normalize( 'NFKD', http_resp.text ).encode( 'ascii', 'ignore' );
-print response_converted;
-parse_xml_resp( response_converted );
+def get_nodes_list( node ):
+    return list( node.iter() );
+
+
+def duplicate_children_node( visited_node, i, comparison_node_list ):
+    children = get_children( visited_node );    # get list of children
+    visited_node.append( children[i] );     # appends the i-th child
+    comparison_node_list.append( children[i] );
+    print comparison_node_list;
+
+
+
+
+def copy_tree( tree_root ):
+    return et.ElementTree( tree_root );        
+
+
+def get_children( node ):
+    return list( node );
+
+
+def get_left_leaf( node ):
+    children = get_children( node );
+    if ( not children ):
+        return node;
+    get_left_leaf( children[0] );
+
+
+def get_leaf_parent( node, parent=None ):
+    children = get_children( node );
+    while ( children ):
+        parent = node;
+        node = children[0];
+        children = get_children( node );  
+        print 'node - ', node;
+        print 'parent - ', parent;
+    if ( parent is not None ):
+        print 'parent final - ', parent;
+        return parent;
+    else:   # it is a one node tree
+        print 'node final - ', node;
+        return node;
+
+
+
+
+if __name__ == '__main__':
+    check_url_syntax( args.url );
+    if args.auto:
+        verify_url( args.url );
+    url = get_address( args.url ); 
+    hr = add_headers( args );
+    content = set_req_body( args.data, args.fdata );
+    print '\nContent:\n';
+    #print content;
+    xml_root = parse_xml_req( content );
+    fuzzml_element_duplication( xml_root );
+    #http_resp = make_request( args.url, hr, content );
+    #save_response( args.data, http_resp.text );
+    #print '\nResponse:\n';
+    #response_converted = unicodedata.normalize( 'NFKD', http_resp.text ).encode( 'ascii', 'ignore' );
+    #print response_converted;
+    #parse_xml_resp( response_converted );
+
+
