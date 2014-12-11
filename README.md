@@ -32,17 +32,38 @@ optional arguments:
                         the request body
 ```
 
-* 'HEADER' is an http header you intend to be used in the request. 'HEADER', when used in command line, should be in the form 'header value' (the apostrophes should included). Note that if the strings contain any character other than letters or numbers, the word should enclosed within quotation marks. For example, if you wish to use the header "Origin: Jack's Server", you should use the string ```'Origin "Jack's Server"'```(note the absence of the colon).
+<dl>
+<dt>'HEADER'
+</dt>
+<dd>is an http header you intend to be used in the request. 'HEADER', when used in command line, should be in the form 'header value' (the apostrophes should included). Note that if the strings contain any character other than letters or numbers, the word should enclosed within quotation marks. For example, if you wish to use the header "Origin: Jack's Server", you should use the string ```'Origin "Jack's Server"'```(note the absence of the colon).
+</dd>
 
-* 'FHEADER' is a file containing 'HEADER's, one per line. The pair header_name and value should be separated by space, but only include quotation if you intend it to be part of the header. For example, if you wish to include the header "Version: Mark/1.1", the file should contain the line ```Version Mark/1.1```.
 
-* 'DATA' is the content you want to send to the web service.
+<dt>'FHEADER'
+</dt>
+<dd>is a file containing 'HEADER's, one per line. The pair header_name and value should be separated by space, but only include quotation if you intend it to be part of the header. For example, if you wish to include the header "Version: Mark/1.1", the file should contain the line ```Version Mark/1.1```.
+</dd>
 
-* 'FDATA' is a file containing data to be sent.
+<dt>'DATA'
+</dt>
+<dd>is the content you want to send to the web service.
+</dd>
 
-* 'DATA', when in command line, must be enclosed within apostrophes or quotation marks. 'DATA' inside an 'FDATA' file is not bound to any rule. Just put it the way you wish it to be sent.
+<dt>'FDATA'
+</dt>
+<dd>is a file containing data to be sent.
+</dd>
 
-* 'UA' e 'CT' are fixed header names. If you want to change them, just provide the new values. The default values are:
+<dt>'DATA'
+</dt>
+<dd>when in command line, 'DATA' must be enclosed within apostrophes or quotation marks. 'DATA' inside an 'FDATA' file is not bound to any rule. Just put it the way you wish it to be sent.
+</dd>
+
+<dt>'UA' e 'CT'
+</dt>
+<dd>are fixed header names. If you want to change them, just provide the new values. The default values are:
+</dd>
+</dl>
 ```
 Content-Type: text/xml; charset=ascii
 User-Agent: FuzzML/1.0
