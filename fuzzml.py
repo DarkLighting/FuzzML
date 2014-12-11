@@ -165,7 +165,7 @@ def fuzzml_element_duplication( root, url, hr ):
     tree_root = new_tree.getroot();
     nodes_to_duplicate = get_nodes_list( tree_root );
     if ( nodes_to_duplicate ):
-        print 'Fuzzing elements and saving responses...'
+        print 'Fuzzing elements (by duplication) and saving responses...'
         for node in nodes_to_duplicate:
             children = get_children( node );
             for child in children:
@@ -176,6 +176,26 @@ def fuzzml_element_duplication( root, url, hr ):
                 node.remove( child_dup );
     else:
         end( 'Tree has only one Element\n' );
+
+
+def fuzzml_element_omission( root, url, hr ):
+    new_tree = copy_tree ( root );
+    tree_root = new_tree.getroot();
+    nodes_to_remove = get_nodes_list( tree_root );
+    if ( nodes_to_remove ):
+        print 'Fuzzing elements (by omission) and saving responses...'
+        for node in nodes_to_remove:
+            children = get_children( node );
+            for child in children:
+                #child_tree = copy_tree( child );
+                #child_dup = child_tree.getroot();
+                index = get_children( node ).index( child );    # remember element position
+                node.remove( child );
+                keep_information( et.tostring( tree_root ), url, hr );
+                node.insert( index, child );  # places the removed node back into place
+    else:
+        end( 'Tree has only one Element\n' );
+
 
 
 def keep_information( fuzzed_xml, url, hr ):
@@ -206,7 +226,8 @@ def main():
     print 'Parsing...';
     #print content;
     xml_root = parse_xml_req( content );
-    fuzzml_element_duplication( xml_root, args.url, hr );
+    #fuzzml_element_duplication( xml_root, args.url, hr );
+    fuzzml_element_omission( xml_root, args.url, hr );
 
 
 
