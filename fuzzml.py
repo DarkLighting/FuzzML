@@ -7,6 +7,7 @@ import os.path
 from datetime import datetime
 import xml.etree.ElementTree as et
 from xml.dom import minidom
+import random
 
 if ( len( sys.argv ) < 2 ):
     print "\nMissing parameters. Run \"%s -h\" for help.\n" %(sys.argv[0]);
@@ -26,19 +27,17 @@ data_group.add_argument( '--data', help='Data to be sent inside the request body
 data_group.add_argument( '--fdata', help='Specify a file containing the data to be sent inside the request body' );
 args = parser.parse_args()
 
-#args.url = args.url.lower()  
-#url = args.url;
 
 def end( reason ):
-    print reason;
+    print '[-] ' + reason;
     exit();
 
 def check_url_syntax( url ):
     if ((url.find('http://',0,7) == -1) and (url.find('https://',0,8) == -1)):
-        end('\nERROR: not starting with http or https.\nCheck your URL and try again.\n');
+        end('\nERROR: address not starting with http or https.\nCheck your URL and try again.\n');
 
 def verify_url( url ):
-    print('\nChecking if URL is available...');
+    print('\n[+] Checking if URL is available...');
     if (args.no_cert_validate):
         req = requests.post(url, data='', verify=False);   
     else:
@@ -46,7 +45,7 @@ def verify_url( url ):
     if (req.status_code == requests.codes.ok):
         return
     else:
-        print "HTTP Response Status Code %s - %s" %( req.status_code, req.reason );
+        print "[+] HTTP Response Status Code %s - %s" %( req.status_code, req.reason );
         end("Exiting.\n");
 
 
@@ -90,7 +89,7 @@ def add_header( header_dict, field_value_dict ):
     return
 
 def add_headers( args ):
-    print ( 'Adding headers...' );
+    print ( '[+] Adding headers...' );
     hr = add_default_headers();
     if ( args.header is not None ):
         add_header( hr, list2dict( args.header ) );
@@ -147,25 +146,13 @@ def parse_xml_req( xml_data ):
         root = xml_data;
     return root;
 
-        
-def parse_xml_resp( xml_data ):
-    if ( ( not isinstance( xml_data, str ) ) and ( not isinstance( xml_data, et.Element ) ) ):
-        end( 'Unrecognized xml data.' );
-    if ( isinstance( xml_data, str ) ):
-        root = et.fromstring( xml_data );
-    elif ( isinstance( xml_data, et.Element ) ):
-        root = xml_data;
-    for child in root.iter():
-        if ( '}' in child.tag ):
-            print child.tag.split('}')[1], child.attrib, '-' + child.text.strip();  # transforms '{scope}TAG' in 'TAG'
-
 
 def fuzzml_element_duplication( root, url, hr ):
     new_tree = copy_tree ( root );
     tree_root = new_tree.getroot();
     nodes_to_duplicate = get_nodes_list( tree_root );
     if ( nodes_to_duplicate ):
-        print 'Fuzzing elements (by duplication) and saving responses...'
+        print( '[+] Fuzzing elements (by duplication) and saving responses...' );
         for node in nodes_to_duplicate:
             children = get_children( node );
             for child in children:
@@ -183,12 +170,10 @@ def fuzzml_element_omission( root, url, hr ):
     tree_root = new_tree.getroot();
     nodes_to_remove = get_nodes_list( tree_root );
     if ( nodes_to_remove ):
-        print 'Fuzzing elements (by omission) and saving responses...'
+        print( '[+] Fuzzing elements (by omission) and saving responses...' );
         for node in nodes_to_remove:
             children = get_children( node );
             for child in children:
-                #child_tree = copy_tree( child );
-                #child_dup = child_tree.getroot();
                 index = get_children( node ).index( child );    # remember element position
                 node.remove( child );
                 keep_information( et.tostring( tree_root ), url, hr );
@@ -197,12 +182,43 @@ def fuzzml_element_omission( root, url, hr ):
         end( 'Tree has only one Element\n' );
 
 
+def fuzzml_element_tag_malforming( root, url, hr ):
+    new_tree = copy_tree ( root );
+    tree_root = new_tree.getroot();
+    nodes_to_remove = get_nodes_list( tree_root );
+    if ( nodes_to_remove ):
+        print( '[+] Fuzzing elements (by tag malformation) and saving responses...' );
+        xml_allowed_chars = sum( list( ( range(65,90),[95],range(97,122) ) ), [] );     # creating list of acceptable chars in an xml tag
+        for node in nodes_to_remove:
+            children = get_children( node );
+            for child in children:
+                if ( '}' in child.tag ):
+                    namespace = child.tag.split('}')[0];
+                    tag = child.tag.split('}')[1];
+                else:
+                    tag = str( child.tag );
+                element_position = get_children( node ).index( child );    # remember element position
+                char_index = random.choice(range(0, len( tag )));  # choosing a random char to strip from tag
+                if (namespace):
+                    child.tag = namespace + '}' + tag.replace( tag[ char_index ], '' );       # stripping char from tag
+                else:
+                    child.tag = tag.replace( tag[ char_index ], '' );       # stripping char from tag
+                child.tag = child.tag + chr(random.choice( xml_allowed_chars ) ) ;     # adding a random ascii char suffix
+                keep_information( et.tostring( tree_root ), url, hr );
+                if (namespace):
+                    child.tag = namespace + '}' + tag ;
+                else:
+                    child.tag = tag ;   # putting everything back to normal
+    else:
+        end( 'Tree has only one Element\n' );
+
+
 
 def keep_information( fuzzed_xml, url, hr ):
     fuzzed_xml_request = minidom.parseString( fuzzed_xml );
     fuzzed_xml_response = make_request( url, hr, fuzzed_xml_request.toprettyxml() );
-    #fuzzed_xml_response = minidom.parseString( response.text.encode( 'utf-8' ) );
-    save_data( fuzzed_xml_request.toprettyxml(), fuzzed_xml_response.text, datetime.now().strftime( "%Y%m%d_%H%M.%S.%f" ) );
+    fuzzed_xml_response = minidom.parseString( fuzzed_xml_response.text.encode( 'utf-8' ) );
+    save_data( fuzzed_xml_request.toprettyxml(), fuzzed_xml_response.toxml(), datetime.now().strftime( "%Y%m%d_%H%M.%S.%f" ) );
     
 
 def get_nodes_list( node ):
@@ -223,11 +239,11 @@ def main():
         verify_url( args.url );
     hr = add_headers( args );
     content = set_req_body( args.data, args.fdata );
-    print 'Parsing...';
-    #print content;
+    print( '[+] Parsing...' );
     xml_root = parse_xml_req( content );
-    #fuzzml_element_duplication( xml_root, args.url, hr );
+    fuzzml_element_duplication( xml_root, args.url, hr );
     fuzzml_element_omission( xml_root, args.url, hr );
+    fuzzml_element_tag_malforming( xml_root, args.url, hr );
 
 
 
