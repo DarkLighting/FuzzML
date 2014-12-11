@@ -49,6 +49,6 @@ User-Agent: FuzzML/1.0
 ```
 
 All the requests and their respective responses will be saved under a folder named "requests" (created by the tool). Files will be named after the url of the web service and the time that the request was made. You will see that the pair will have the same name, except for the suffixes "req" (as in request) and "resp" (as in response).
-  * `www.example.com_webservice.php_20141110_1822.15.059238_req.txt`
-  * `www.example.com_webservice.php_20141110_1822.15.059238_resp.txt`
+  * `www.example.com_webservice.php_20141110_1822.15.059238_req.xml`
+  * `www.example.com_webservice.php_20141110_1822.15.059238_resp.xml`
 
