@@ -34,7 +34,7 @@ def end( reason ):
 
 def check_url_syntax( url ):
     if ((url.find('http://',0,7) == -1) and (url.find('https://',0,8) == -1)):
-        end('\nERROR: address not starting with http or https.\nCheck your URL and try again.\n');
+        end( 'Address not starting with http or https.\n[-] Check your URL and try again.\n' );
 
 def verify_url( url ):
     print('\n[+] Checking if URL is available...');
@@ -248,6 +248,6 @@ def main():
 
 
 
-if __name__ == '__main__':
+if ( __name__ == '__main__' ):
     main();
 
