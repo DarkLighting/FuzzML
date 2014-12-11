@@ -62,12 +62,12 @@ def get_save_filename( url, clock ):
     if url.startswith( 'http://' ):
         address = url.replace( 'http://', '', 1 );
         address = address.replace( '/', '_' );
-        address = address + '_' + clock;    # www.example.com_webservice.php_20141110_1822.15.059238.txt
+        address = address + '_' + clock;    # www.example.com_webservice.php_20141110_1822.15.059238.xml
         return address;
     elif url.startswith( 'https://' ):
         address = url.replace( 'https://', '', 1 );
         address = address.replace( '/', '_' );
-        address = address + '_' + clock;    # www.example.com_webservice.php_20141110_1822.15.059238.txt
+        address = address + '_' + clock;    # www.example.com_webservice.php_20141110_1822.15.059238.xml
         return address;
     else:
         end('Malformed URL');
@@ -76,9 +76,9 @@ def save_data( request_content, response_content, clock ):
     path = 'requests/';     # path to write requests's response
     if not os.path.exists(path):
         os.makedirs(path);
-    with open( path + get_save_filename( args.url, clock ) + '_req.txt', 'w+' ) as fp_req:     # requests/www.example.com_webservice.php_20141110_1822.15.059238_req.txt 
+    with open( path + get_save_filename( args.url, clock ) + '_req.xml', 'w+' ) as fp_req:     # requests/www.example.com_webservice.php_20141110_1822.15.059238_req.xml 
         fp_req.write( request_content.encode('utf-8') );    # fixing problems with unicode characters 
-    with open( path + get_save_filename( args.url, clock ) + '_resp.txt', 'w+' ) as fp_resp:    # requests/www.example.com_webservice.php_20141110_1822.15.059238_resp.txt
+    with open( path + get_save_filename( args.url, clock ) + '_resp.xml', 'w+' ) as fp_resp:    # requests/www.example.com_webservice.php_20141110_1822.15.059238_resp.xml
         fp_resp.write( response_content.encode( 'utf-8' ) );  # fixing problems with unicode characters 
 
 def add_default_headers():
