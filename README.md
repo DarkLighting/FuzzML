@@ -35,13 +35,13 @@ optional arguments:
 <dl>
 <dt>'HEADER'
 </dt>
-<dd>is an http header you intend to be used in the request. 'HEADER', when used in command line, should be in the form 'header value' (the apostrophes should included). Note that if the strings contain any character other than letters or numbers, the word should enclosed within quotation marks. For example, if you wish to use the header "Origin: Jack's Server", you should use the string ```'Origin "Jack's Server"'```(note the absence of the colon).
+<dd>is an http header you intend to be used in the request. <b>'HEADER'</b>, when used in command line, should be in the form 'header value' (the apostrophes should included). Note that if the strings contain any character other than letters or numbers, the word should enclosed within quotation marks. For example, if you wish to use the header "Origin: Jack's Server", you should use the string ```'Origin "Jack's Server"'```(note the absence of the colon).
 </dd>
 
 
 <dt>'FHEADER'
 </dt>
-<dd>is a file containing 'HEADER's, one per line. The pair header_name and value should be separated by space, but only include quotation if you intend it to be part of the header. For example, if you wish to include the header "Version: Mark/1.1", the file should contain the line ```Version Mark/1.1```.
+<dd>is a file containing <b>'HEADER'</b>s, one per line. The pair header_name and value should be separated by space, but only include quotation if you intend it to be part of the header. For example, if you wish to include the header "Version: Mark/1.1", the file should contain the line ```Version Mark/1.1```.
 </dd>
 
 <dt>'DATA'
@@ -56,7 +56,7 @@ optional arguments:
 
 <dt>'DATA'
 </dt>
-<dd>when in command line, 'DATA' must be enclosed within apostrophes or quotation marks. 'DATA' inside an 'FDATA' file is not bound to any rule. Just put it the way you wish it to be sent.
+<dd>when in command line, <b>'DATA'</b> must be enclosed within apostrophes or quotation marks. <b>'DATA'</b> inside an <b>'FDATA'</b> file is not bound to any rule. Just put it the way you wish it to be sent.
 </dd>
 
 <dt>'UA' e 'CT'
