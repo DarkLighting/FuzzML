@@ -15,16 +15,16 @@ if ( len( sys.argv ) < 2 ):
 
 parser = argparse.ArgumentParser( description='SOAP web service Fuzzer' );
 parser.add_argument( 'url', help='Web service URL to fuzz' );
-parser.add_argument( '--no-cert-validate', action='store_true', help="Disable certificates validation" );
+parser.add_argument( '--no-cert-validate', action='store_true', help="Disable certificate validation" );
 parser.add_argument( '--auto', action='store_true', help="Enable automatic testing" );
 header_group = parser.add_mutually_exclusive_group();
-header_group.add_argument( '--header', nargs='*', help='Specify required request headers' );
-header_group.add_argument( '--fheader', help='Specify a file containing the required request headers' );
-parser.add_argument( '--ua', help='Specify User-Agent header' );
-parser.add_argument( '--ct', help='Specify Content-Type header' );
+header_group.add_argument( '--header', metavar='<Header>', nargs='*', help='Specify required request headers' );
+header_group.add_argument( '--fheader', metavar='<Headers file>', help='Specify a file containing the required request headers' );
+parser.add_argument( '--ua', metavar='<User-Agent>', help='Specify User-Agent header' );
+parser.add_argument( '--ct', metavar='<Content-Type>', help='Specify Content-Type header' );
 data_group = parser.add_mutually_exclusive_group();
-data_group.add_argument( '--data', help='Data to be sent inside the request body' );
-data_group.add_argument( '--fdata', help='Specify a file containing the data to be sent inside the request body' );
+data_group.add_argument( '--data', metavar='<POST content>', help='Data to be sent inside the request body' );
+data_group.add_argument( '--fdata', metavar='<POST content file>', help='Specify a file containing the data to be sent inside the request body' );
 args = parser.parse_args()
 
 
