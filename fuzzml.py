@@ -81,7 +81,7 @@ def save_data( request_content, response_content, clock ):
         fp_resp.write( response_content.encode( 'utf-8' ) );  # fixing problems with unicode characters 
 
 def add_default_headers():
-    return dict({ 'Content-Type': 'text/xml; charset=ascii', 'User-Agent': 'FuzzML/1.0' });
+    return dict({ 'Content-Type': 'text/xml; charset=ascii', 'User-Agent': 'FuzzML/1.0', 'SOAPAction': '\"\"' });
 
 
 def add_header( header_dict, field_value_dict ):
