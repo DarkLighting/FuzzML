@@ -34,7 +34,7 @@ def end( reason ):
 
 def check_url_syntax( url ):
     if ((url.find('http://',0,7) == -1) and (url.find('https://',0,8) == -1)):
-        end('\nERROR: address not starting with http or https.\nCheck your URL and try again.\n');
+        end( 'Address not starting with http or https.\n[-] Check your URL and try again.\n' );
 
 def verify_url( url ):
     print('\n[+] Checking if URL is available...');
@@ -182,7 +182,7 @@ def fuzzml_element_omission( root, url, hr ):
         end( 'Tree has only one Element\n' );
 
 
-def fuzzml_element_tag_malforming( root, url, hr ):
+def fuzzml_element_tag_malformation( root, url, hr ):
     new_tree = copy_tree ( root );
     tree_root = new_tree.getroot();
     nodes_to_remove = get_nodes_list( tree_root );
@@ -213,7 +213,6 @@ def fuzzml_element_tag_malforming( root, url, hr ):
         end( 'Tree has only one Element\n' );
 
 
-
 def keep_information( fuzzed_xml, url, hr ):
     fuzzed_xml_request = minidom.parseString( fuzzed_xml );
     fuzzed_xml_response = make_request( url, hr, fuzzed_xml_request.toprettyxml() );
@@ -234,19 +233,21 @@ def get_children( node ):
 
 
 def main():
+    print;
     check_url_syntax( args.url );
     if args.auto:
         verify_url( args.url );
     hr = add_headers( args );
     content = set_req_body( args.data, args.fdata );
-    print( '[+] Parsing...' );
+    print( '[+] Parsing XML...' );
     xml_root = parse_xml_req( content );
     fuzzml_element_duplication( xml_root, args.url, hr );
     fuzzml_element_omission( xml_root, args.url, hr );
-    fuzzml_element_tag_malforming( xml_root, args.url, hr );
+    fuzzml_element_tag_malformation( xml_root, args.url, hr );
+    print( '[+] Fuzzing complete. Saved resposes are inside the "requests" folder.\n')
 
 
 
-if __name__ == '__main__':
+if ( __name__ == '__main__' ):
     main();
 
