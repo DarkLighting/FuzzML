@@ -217,7 +217,7 @@ def keep_information( fuzzed_xml, url, hr ):
     fuzzed_xml_request = minidom.parseString( fuzzed_xml );
     fuzzed_xml_response = make_request( url, hr, fuzzed_xml_request.toprettyxml() );
     fuzzed_xml_response = minidom.parseString( fuzzed_xml_response.text.encode( 'utf-8' ) );
-    save_data( fuzzed_xml_request.toprettyxml(), fuzzed_xml_response.toxml(), datetime.now().strftime( "%Y%m%d_%H%M.%S.%f" ) );
+    save_data( fuzzed_xml_request.toprettyxml(), fuzzed_xml_response.toprettyxml(), datetime.now().strftime( "%Y%m%d_%H%M.%S.%f" ) );
     
 
 def get_nodes_list( node ):
