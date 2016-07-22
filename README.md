@@ -2,7 +2,7 @@ FuzzML
 ======
 
 XML Fuzzer 
-<br>The current release supports fuzzing by element duplication, element omission and tag malformation. Other methods will be added in the future.
+<br>The current release supports fuzzing by element duplication, element omission and tag malformation. Other methods may be added in the future.
 
 
 *Feature requests are very welcome!*
